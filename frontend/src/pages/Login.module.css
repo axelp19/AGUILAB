@@ -1,0 +1,403 @@
+.wrapper {
+  min-height: 100vh;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Canvas ocupa toda la pantalla detrás de todo */
+.canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+/* ── PANEL IZQUIERDO ── */
+.leftPanel {
+  width: 46%;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+}
+
+.leftContent {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+}
+
+/* Logo imagen personalizada */
+.logoImg {
+  width: 240px;
+  height: 240px;
+  object-fit: contain;
+  border-radius: 32px;
+  background: rgba(255,255,255,.08);
+  padding: 16px;
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,.18),
+    0 24px 70px rgba(0,0,0,.55);
+  animation: pulse 3s ease-in-out infinite;
+}
+
+/* Círculo AG cuando no hay imagen */
+.logoCircle {
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #CC0000 0%, #880000 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 0 0 10px rgba(204,0,0,.22),
+    0 0 0 20px rgba(204,0,0,.1),
+    0 0 80px rgba(204,0,0,.55),
+    0 24px 60px rgba(0,0,0,.5);
+  animation: pulse 3s ease-in-out infinite;
+}
+.logoText {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 800;
+  font-size: 4.5rem;
+  color: #fff;
+  letter-spacing: 4px;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1);    filter: brightness(1); }
+  50%       { transform: scale(1.05); filter: brightness(1.15); }
+}
+
+.appName {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 3.2rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 3px;
+  text-shadow: 0 2px 30px rgba(0,0,0,.5);
+  margin: 0;
+}
+
+.appSub {
+  color: rgba(255,255,255,.65);
+  font-size: .95rem;
+  font-weight: 300;
+  margin: 0;
+}
+
+.institucional {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 24px;
+  padding: 10px 22px;
+  color: rgba(255,255,255,.9);
+  font-size: .82rem;
+  font-weight: 600;
+  backdrop-filter: blur(10px);
+}
+
+/* ── PANEL DERECHO ── */
+.rightPanel {
+  flex: 1;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+}
+
+.card {
+  background: rgba(255,255,255,.96);
+  border-radius: 20px;
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.4),
+    0 0 0 1px rgba(255,255,255,.2);
+  padding: 44px;
+  width: 100%;
+  max-width: 420px;
+  backdrop-filter: blur(16px);
+  animation: cardIn .5s ease both;
+}
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.cardHeader { margin-bottom: 28px; }
+.cardHeader h2 {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--azul);
+  margin-bottom: 5px;
+}
+.cardHeader p { color: var(--gris-400); font-size: .86rem; }
+
+.errorMsg {
+  background: var(--rojo-light);
+  color: var(--rojo);
+  border-left: 4px solid var(--rojo);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: .8rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.form { display: flex; flex-direction: column; gap: 16px; }
+
+.formGroup { display: flex; flex-direction: column; gap: 6px; }
+.formGroup label { font-size: .8rem; font-weight: 700; color: var(--gris-600); }
+.formGroup label span { color: var(--rojo); }
+
+.inputWrap { position: relative; }
+.inputIcon {
+  position: absolute; left: 13px; top: 50%;
+  transform: translateY(-50%);
+  font-size: .85rem; pointer-events: none;
+}
+.inputWrap input {
+  width: 100%;
+  padding: 11px 14px 11px 40px;
+  border: 1.5px solid var(--gris-200);
+  border-radius: 10px;
+  font-size: .88rem;
+  font-family: 'Nunito', sans-serif;
+  outline: none;
+  background: #fff;
+  transition: border-color .15s, box-shadow .15s;
+}
+.inputWrap input:focus {
+  border-color: var(--azul);
+  box-shadow: 0 0 0 3px rgba(0,48,135,.1);
+}
+
+.forgot {
+  text-align: right;
+  font-size: .78rem;
+  color: var(--azul);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  margin-top: -6px;
+}
+
+.btnLogin {
+  width: 100%;
+  padding: 13px;
+  background: var(--azul);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .15s, transform .1s, box-shadow .15s;
+  margin-top: 4px;
+}
+.btnLogin:hover {
+  background: var(--azul-med);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(0,48,135,.3);
+}
+.btnLogin:active { transform: translateY(0); }
+
+.divider { border: none; border-top: 1px solid var(--gris-200); margin: 22px 0; }
+
+.helpText {
+  font-size: .75rem;
+  color: var(--gris-400);
+  text-align: center;
+  line-height: 1.7;
+}
+
+.tecFooter {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: .72rem;
+  color: var(--gris-400);
+}
+.tecBadge {
+  background: var(--azul);
+  color: #fff;
+  padding: 2px 9px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: .7rem;
+}
+
+@media (max-width: 1024px) {
+  .wrapper {
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .leftPanel,
+  .rightPanel {
+    width: 100%;
+    padding: 24px;
+  }
+
+  .leftPanel {
+    padding-bottom: 8px;
+  }
+
+  .rightPanel {
+    padding-top: 8px;
+  }
+
+  .leftContent {
+    gap: 14px;
+  }
+
+  .logoImg {
+    width: 168px;
+    height: 168px;
+    border-radius: 24px;
+    padding: 12px;
+  }
+
+  .appName {
+    font-size: 2.5rem;
+  }
+
+  .appSub {
+    font-size: .9rem;
+  }
+
+  .institucional {
+    padding: 9px 16px;
+    font-size: .78rem;
+    text-align: center;
+  }
+
+  .card {
+    max-width: 520px;
+    padding: 34px 28px;
+  }
+}
+
+@media (max-width: 640px) {
+  .wrapper {
+    min-height: 100dvh;
+  }
+
+  .leftPanel,
+  .rightPanel {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .leftPanel {
+    padding-top: 18px;
+    padding-bottom: 6px;
+  }
+
+  .rightPanel {
+    padding-top: 6px;
+    padding-bottom: 18px;
+    align-items: stretch;
+  }
+
+  .leftContent {
+    gap: 10px;
+  }
+
+  .logoImg {
+    width: 112px;
+    height: 112px;
+    border-radius: 18px;
+    padding: 8px;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,.18),
+      0 16px 40px rgba(0,0,0,.4);
+  }
+
+  .appName {
+    font-size: 2rem;
+    letter-spacing: 1.5px;
+  }
+
+  .appSub {
+    font-size: .82rem;
+    max-width: 280px;
+  }
+
+  .institucional {
+    width: 100%;
+    max-width: 320px;
+    justify-content: center;
+    padding: 8px 12px;
+    font-size: .74rem;
+    border-radius: 16px;
+    line-height: 1.35;
+  }
+
+  .card {
+    max-width: none;
+    width: 100%;
+    border-radius: 18px;
+    padding: 24px 18px;
+    box-shadow:
+      0 20px 50px rgba(0,0,0,.32),
+      0 0 0 1px rgba(255,255,255,.18);
+  }
+
+  .cardHeader {
+    margin-bottom: 20px;
+  }
+
+  .cardHeader h2 {
+    font-size: 1.65rem;
+  }
+
+  .cardHeader p {
+    font-size: .8rem;
+  }
+
+  .form {
+    gap: 14px;
+  }
+
+  .inputWrap input {
+    padding: 12px 14px 12px 40px;
+    font-size: .9rem;
+  }
+
+  .btnLogin {
+    padding: 12px;
+    font-size: .95rem;
+  }
+
+  .divider {
+    margin: 18px 0;
+  }
+
+  .helpText {
+    font-size: .72rem;
+    line-height: 1.55;
+  }
+
+  .tecFooter {
+    margin-top: 14px;
+    flex-wrap: wrap;
+    text-align: center;
+    line-height: 1.4;
+  }
+}

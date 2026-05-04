@@ -1,0 +1,129 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Nunito:wght@300;400;600;700;800&display=swap');
+
+:root {
+  /* ── Paleta ITSJR / TecNM ── */
+  --azul:         #003087;
+  --azul-med:     #004db3;
+  --azul-dark:    #001a5c;
+  --azul-light:   #e8eef8;
+  --rojo:         #CC0000;
+  --rojo-med:     #e50000;
+  --rojo-light:   #fdecea;
+  --blanco:       #ffffff;
+  --gris-50:      #f9fafb;
+  --gris-100:     #f4f6fb;
+  --gris-200:     #e8ecf4;
+  --gris-300:     #cbd5e0;
+  --gris-400:     #a0aec0;
+  --gris-600:     #4a5568;
+  --gris-800:     #1a202c;
+  --verde:        #0a7c4e;
+  --verde-light:  #e6f4ef;
+  --naranja:      #d97706;
+  --naranja-light:#fef3c7;
+
+  /* ── Shadows ── */
+  --shadow-sm:  0 2px 8px rgba(0,48,135,.09);
+  --shadow-md:  0 6px 24px rgba(0,48,135,.14);
+  --shadow-lg:  0 12px 40px rgba(0,48,135,.18);
+
+  /* ── Layout ── */
+  --sidebar-w:  240px;
+  --topbar-h:   62px;
+  --radius:     10px;
+  --radius-lg:  14px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--gris-100);
+  color: var(--gris-800);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--gris-300); border-radius: 3px; }
+
+/* Global resets */
+button { font-family: 'Nunito', sans-serif; cursor: pointer; }
+a { text-decoration: none; }
+input, select, textarea { font-family: 'Nunito', sans-serif; }
+
+.responsive-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.responsive-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.responsive-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.responsive-grid-5 {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.responsive-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-scroll table {
+  min-width: 720px;
+}
+
+@media (max-width: 1024px) {
+  :root {
+    --topbar-h: 60px;
+  }
+
+  .responsive-grid-5 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .responsive-grid-2,
+  .responsive-grid-3,
+  .responsive-grid-4,
+  .responsive-grid-5,
+  .responsive-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  html {
+    font-size: 15px;
+  }
+
+  .table-scroll table {
+    min-width: 640px;
+  }
+}
+
+/* Utility animations */
+@keyframes fadeIn  { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.animate-fade { animation: fadeIn .3s ease both; }

@@ -1,0 +1,124 @@
+.topbar {
+  position: fixed;
+  top: 0;
+  left: var(--sidebar-w);
+  right: 0;
+  height: var(--topbar-h);
+  background: var(--blanco);
+  border-bottom: 2px solid var(--gris-200);
+  display: flex;
+  align-items: center;
+  padding: 0 28px;
+  gap: 16px;
+  z-index: 90;
+  box-shadow: var(--shadow-sm);
+}
+
+.menuBtn {
+  display: none;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--gris-200);
+  border-radius: 10px;
+  background: var(--blanco);
+  color: var(--azul);
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--azul);
+  flex: 1;
+  letter-spacing: .4px;
+}
+.subtitle { color: var(--rojo); }
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.userMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.1;
+}
+
+.notifWrap { position: relative; cursor: pointer; }
+.bell { font-size: 1.1rem; }
+.badge {
+  position: absolute;
+  top: -5px; right: -7px;
+  background: var(--rojo);
+  color: #fff;
+  border-radius: 50%;
+  font-size: .6rem;
+  font-weight: 800;
+  width: 16px; height: 16px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--azul);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff;
+  font-weight: 800;
+  font-size: .8rem;
+  cursor: pointer;
+}
+
+.userName {
+  font-size: .82rem;
+  font-weight: 700;
+  color: var(--gris-600);
+}
+
+.userRole {
+  font-size: .72rem;
+  color: var(--gris-400);
+}
+
+@media (max-width: 1024px) {
+  .topbar {
+    left: 0;
+    padding: 0 20px;
+  }
+
+  .menuBtn {
+    display: inline-flex;
+  }
+}
+
+@media (max-width: 640px) {
+  .topbar {
+    padding: 0 14px;
+    gap: 10px;
+  }
+
+  .title {
+    font-size: 1rem;
+    min-width: 0;
+  }
+
+  .subtitle {
+    display: none;
+  }
+
+  .userMeta {
+    display: none;
+  }
+
+  .avatar {
+    width: 34px;
+    height: 34px;
+    font-size: .75rem;
+  }
+}
