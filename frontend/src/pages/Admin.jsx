@@ -28,6 +28,7 @@ export default function Admin({ activePage, onNavigate, onLogout, title, subtitl
   const [labs, setLabs] = useState([])
   const [log, setLog] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [modalUser, setModalUser] = useState(false)
   const [modalCat, setModalCat] = useState(false)
   const [editUser, setEditUser] = useState(null)
@@ -38,6 +39,7 @@ export default function Admin({ activePage, onNavigate, onLogout, title, subtitl
 
   const cargar = () => {
     setLoading(true)
+    setError('')
     Promise.all([api.getUsuarios(), api.getCategorias(), api.getLabs(), api.getLog()])
       .then(([u, c, l, lg]) => {
         setUsuarios(u)
@@ -45,6 +47,7 @@ export default function Admin({ activePage, onNavigate, onLogout, title, subtitl
         setLabs(l)
         setLog(lg)
       })
+      .catch(e => setError(e.message || 'Error al cargar administracion'))
       .finally(() => setLoading(false))
   }
 
@@ -183,6 +186,12 @@ export default function Admin({ activePage, onNavigate, onLogout, title, subtitl
           )
         })}
       </div>
+
+      {error && (
+        <div style={{ background: 'var(--rojo-light)', color: 'var(--rojo)', padding: 14, borderRadius: 8, marginBottom: 16 }}>
+          {error}
+        </div>
+      )}
 
       {tab === 'usuarios' && (
         <>

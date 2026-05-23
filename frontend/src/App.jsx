@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import './styles/global.css'
-import { api } from './api'
+import { api, clearToken, getToken, setToken } from './api'
 
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
@@ -25,25 +25,25 @@ export default function App() {
   const [route, setRoute] = useState({ page: 'dashboard', state: null })
 
   useEffect(() => {
-    const token = localStorage.getItem('aguilab_token')
+    const token = getToken()
     if (!token) {
       setLoading(false)
       return
     }
     api.me()
       .then(data => setUsuario(data.usuario))
-      .catch(() => localStorage.removeItem('aguilab_token'))
+      .catch(() => clearToken())
       .finally(() => setLoading(false))
   }, [])
 
   const handleLogin = (token, user) => {
-    localStorage.setItem('aguilab_token', token)
+    setToken(token)
     setUsuario(user)
     setRoute({ page: 'dashboard', state: null })
   }
 
   const handleLogout = () => {
-    localStorage.removeItem('aguilab_token')
+    clearToken()
     setUsuario(null)
     setRoute({ page: 'dashboard', state: null })
   }

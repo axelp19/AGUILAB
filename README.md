@@ -1,49 +1,227 @@
-# AguiLab ITSJR — Sistema de Gestión de Inventarios
+# 🦅 AguiLab — Sistema de Gestión de Laboratorios
 
-## 🗂️ Estructura del proyecto
+Sistema web para el inventario y control de equipos en laboratorios del **ITSJR**.  
+Backend migrado a **Python + Flask + pyodbc**. Frontend en **React + Vite** (sin cambios).
 
-```text
+---
+
+## 📁 Estructura del Proyecto
+
+```
 aguilab/
-├── backend/                    ← API Node.js + Express
-│   ├── config/db.js            ← Conexión MySQL
-│   ├── middleware/auth.js      ← JWT + control de roles
-│   ├── routes/                 ← auth, usuarios, laboratorios, equipos, tickets...
-│   ├── server.js               ← Servidor principal (puerto 4000)
-│   ├── seed.js                 ← Crea usuarios iniciales
-│   ├── aguilab_db.sql          ← Esquema + datos iniciales
-│   ├── .env.example            ← Variables de entorno
-│   └── package.json
-├── frontend/                   ← React + Vite (puerto 5173)
-│   ├── src/
-│   │   ├── api.js              ← Cliente HTTP centralizado
-│   │   ├── App.jsx             ← Router + autenticación JWT
-│   │   ├── components/         ← Layout, UI compartida
-│   │   ├── pages/              ← Dashboard, inventario, tickets, admin...
-│   │   └── styles/             ← Estilos globales
-│   ├── vite.config.js          ← Proxy dev hacia backend
-│   ├── .env.example            ← Variables de entorno del frontend
-│   └── package.json
-└── README.md
+├── backend/                  ← API Python (Flask)
+│   ├── server.py             ← Punto de entrada, registro de rutas
+│   ├── config.py             ← Conexión a base de datos (pyodbc)
+│   ├── middleware.py         ← JWT, rate-limit de login, decoradores
+│   ├── .env                  ← Variables de entorno
+│   ├── requirements.txt      ← Dependencias Python
+│   └── routes/
+│       ├── auth.py           ← POST /api/auth/login · GET /api/auth/me
+│       ├── usuarios.py       ← CRUD de usuarios
+│       ├── laboratorios.py   ← CRUD de laboratorios
+│       ├── equipos.py        ← CRUD de equipos
+│       ├── tickets.py        ← CRUD de tickets de soporte
+│       ├── categorias.py     ← CRUD de categorías de equipo
+│       ├── dashboard.py      ← KPIs y datos para el dashboard
+│       └── log.py            ← Log de actividad (solo admin)
+├── db/
+│   └── init.sql              ← Script de base de datos MySQL/MariaDB para Docker
+└── frontend/                 ← React + Vite
+    ├── src/
+    └── ...
 ```
 
 ---
 
-## 🔐 Roles y permisos
+## ⚙️ Requisitos
 
-| Función | Administrador | Encargado |
-|--------------------------------------|:---:|:---:|
-| Ver dashboard y reportes | ✅ | ✅ |
-| Ver laboratorios asignados | ✅ | ✅ |
-| Ver y filtrar inventario | ✅ | ✅ |
-| Crear, editar y dar de baja equipos | ✅ | ✅ |
-| Crear y ver tickets | ✅ | ✅ |
-| Cambiar estado de tickets | ✅ | ✅ |
-| Editar su propio perfil | ✅ | ✅ |
-| Panel de Administración | ✅ | ❌ |
+| Herramienta | Versión recomendada |
+|---|---|
+| Python | 3.10 o superior |
+| MySQL / MariaDB | 10.6+ / 8.0+ |
+| MariaDB ODBC Driver | 3.2 (para pyodbc) |
+| Node.js | 18+ (solo para el frontend) |
+| pnpm | 10+ |
+| Docker | Docker Compose v2 |
+
+---
+
+## 🚀 Instalación y Ejecución
+
+### 1. Configurar la base de datos
+
+```sql
+-- Desde MySQL Workbench, DBeaver o la terminal:
+mysql -u root -p < db/init.sql
+```
+
+### 2. Instalar el driver ODBC
+
+Descarga e instala el **MariaDB ODBC Connector 3.2** desde:  
+https://mariadb.com/downloads/connectors/connectors-data-access/odbc-connector
+
+Verifica que está instalado ejecutando en Python:
+
+```python
+import pyodbc
+print(pyodbc.drivers())   # debe aparecer "MariaDB ODBC 3.2 Driver"
+```
+
+### 3. Configurar variables de entorno
+
+Edita `backend/.env`:
+
+```env
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=tu_password
+DB_NAME=aguilab
+JWT_SECRET=aguilab_secret_2026_itsjr
+PORT=4000
+HOST=0.0.0.0
+CORS_ORIGIN=http://localhost:5173
+```
+
+### 4. Instalar dependencias Python
+
+```bash
+cd backend
+pip install -r requirements.txt
+```
+
+### 5. Ejecutar el backend
+
+```bash
+cd backend
+python server.py
+```
+
+La API quedará disponible en: `http://localhost:4000`
+
+### 6. Ejecutar el frontend
+
+```bash
+cd frontend
+corepack enable
+pnpm install --frozen-lockfile
+pnpm run dev
+```
+
+El frontend quedará en: `http://localhost:5173`
+
+---
+
+## 🔑 Autenticación
+
+El sistema usa **JWT (JSON Web Tokens)** con expiración de 8 horas.
+
+- `POST /api/auth/login` → devuelve `token` + datos del usuario
+- Todos los demás endpoints requieren el header:
+  ```
+  Authorization: Bearer <token>
+  ```
+
+### Protección de rutas
+
+| Decorador         | Descripción                                     |
+|-------------------|-------------------------------------------------|
+| `@verificar_token`| Valida el JWT; guarda usuario en `flask.g`      |
+| `@solo_admin`     | Requiere `rol == 'administrador'`               |
+| `@limit_login_attempts` | Bloquea tras 5 intentos fallidos en 15 min |
+
+---
+
+## 📡 Endpoints de la API
+
+### 🔐 Auth
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| POST | `/api/auth/login` | Iniciar sesión |
+| GET | `/api/auth/me` | Obtener usuario actual |
+
+### 👤 Usuarios *(token requerido)*
+| Método | Ruta | Rol |
+|--------|------|-----|
+| GET | `/api/usuarios` | Admin: todos · Encargado: solo él |
+| POST | `/api/usuarios` | Solo admin |
+| PUT | `/api/usuarios/<id>` | Admin: cualquiera · Encargado: solo su perfil |
+| DELETE | `/api/usuarios/<id>` | Solo admin (desactiva, no borra) |
+
+### 🏛 Laboratorios *(token requerido)*
+| Método | Ruta | Rol |
+|--------|------|-----|
+| GET | `/api/laboratorios` | Admin: todos · Encargado: asignados |
+| POST | `/api/laboratorios` | Solo admin |
+| PUT | `/api/laboratorios/<id>` | Solo admin |
+| DELETE | `/api/laboratorios/<id>` | Solo admin |
+
+### 🖥 Equipos *(token requerido)*
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/api/equipos` | Filtros: `laboratorio_id`, `estado`, `categoria`, `incluir_bajas` |
+| GET | `/api/equipos/<id>` | Detalle de un equipo |
+| POST | `/api/equipos` | Crear equipo |
+| PUT | `/api/equipos/<id>` | Editar equipo |
+| DELETE | `/api/equipos/<id>` | Dar de baja (estado = `baja`) |
+
+### 🎫 Tickets *(token requerido)*
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/api/tickets` | Filtros: `estado`, `prioridad` |
+| POST | `/api/tickets` | Crear ticket |
+| PUT | `/api/tickets/<id>` | Actualizar estado |
+
+### 📂 Categorías *(token requerido)*
+| Método | Ruta | Rol |
+|--------|------|-----|
+| GET | `/api/categorias` | Todos |
+| POST | `/api/categorias` | Solo admin |
+| PUT | `/api/categorias/<id>` | Solo admin |
+| DELETE | `/api/categorias/<id>` | Solo admin |
+
+### 📊 Dashboard *(token requerido)*
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/api/dashboard` | KPIs, tickets abiertos, gráficas |
+
+### 📋 Log de actividad *(solo admin)*
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/api/log` | Últimas 100 acciones del sistema |
+
+### 💚 Health check
+| Método | Ruta |
+|--------|------|
+| GET | `/api/health` |
+
+---
+
+## 🗄 Base de Datos
+
+| Tabla | Descripción |
+|-------|-------------|
+| `usuarios` | Cuentas del sistema (admin / encargado) |
+| `laboratorios` | Espacios físicos de laboratorio |
+| `usuario_laboratorio` | Relación N:M usuario ↔ laboratorio |
+| `categorias` | Tipos de equipo (PC, Monitor, etc.) |
+| `equipos` | Inventario de equipos por laboratorio |
+| `tickets` | Reportes de fallas o mantenimientos |
+| `log_actividad` | Auditoría de acciones del sistema |
+
+---
+
+## 🔒 Roles y Permisos
+
+| Acción | Administrador | Encargado |
+|--------|:---:|:---:|
+| Ver todos los laboratorios | ✅ | ❌ (solo asignados) |
+| Crear / editar / eliminar labs | ✅ | ❌ |
+| Ver todos los equipos | ✅ | ❌ (solo su lab) |
+| Crear / editar equipos | ✅ | ✅ (solo su lab) |
 | Gestionar usuarios | ✅ | ❌ |
-| Gestionar categorías | ✅ | ❌ |
 | Ver log de actividad | ✅ | ❌ |
-| Crear, editar y eliminar laboratorios | ✅ | ❌ |
+| Crear tickets | ✅ | ✅ |
 
 ---
 
@@ -57,35 +235,7 @@ s
 
 ---
 
-## 🌐 Endpoints de la API
+## 👨‍💻 Autor
 
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| POST | `/api/auth/login` | Iniciar sesión |
-| GET | `/api/auth/me` | Verificar token y devolver usuario |
-| GET | `/api/dashboard` | KPIs, gráficas y actividad reciente |
-| GET | `/api/laboratorios` | Listar laboratorios |
-| POST | `/api/laboratorios` | Crear laboratorio (admin) |
-| PUT | `/api/laboratorios/:id` | Editar laboratorio (admin) |
-| DELETE | `/api/laboratorios/:id` | Eliminar laboratorio (admin) |
-| GET | `/api/equipos` | Listar equipos con filtros |
-| GET | `/api/equipos/:id` | Ver detalle de equipo |
-| POST | `/api/equipos` | Crear equipo |
-| PUT | `/api/equipos/:id` | Editar equipo |
-| DELETE | `/api/equipos/:id` | Dar de baja equipo |
-| GET | `/api/tickets` | Listar tickets |
-| POST | `/api/tickets` | Crear ticket |
-| PUT | `/api/tickets/:id` | Cambiar estado del ticket |
-| GET | `/api/usuarios` | Listar usuarios |
-| POST | `/api/usuarios` | Crear usuario (admin) |
-| PUT | `/api/usuarios/:id` | Editar usuario |
-| DELETE | `/api/usuarios/:id` | Desactivar usuario (admin) |
-| GET | `/api/categorias` | Listar categorías |
-| POST | `/api/categorias` | Crear categoría (admin) |
-| PUT | `/api/categorias/:id` | Editar categoría (admin) |
-| DELETE | `/api/categorias/:id` | Eliminar categoría (admin) |
-| GET | `/api/log` | Log de actividad (admin) |
-| GET | `/api/health` | Verificar estado de la API |
-
-
-*AguiLab v2.0 · TecNM Campus San Juan del Río · 2026*
+**ITSJR** — Sistema AguiLab  
+Desarrollado para la gestión de inventario de laboratorios de cómputo.

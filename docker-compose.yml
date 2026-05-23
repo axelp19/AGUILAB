@@ -1,0 +1,57 @@
+services:
+  db-server:
+    image: mariadb:10.11
+    container_name: aguilab-db-server
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpassword
+      MARIADB_DATABASE: aguilab
+      MARIADB_CHARACTER_SET_SERVER: utf8mb4
+      MARIADB_COLLATION_SERVER: utf8mb4_spanish_ci
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  mi-api-flask:
+    build:
+      context: ./backend
+    container_name: aguilab-mi-api-flask
+    restart: unless-stopped
+    depends_on:
+      db-server:
+        condition: service_healthy
+    environment:
+      DB_DRIVER: MariaDB ODBC 3.2 Driver
+      DB_HOST: db-server
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: rootpassword
+      DB_NAME: aguilab
+      JWT_SECRET: aguilab_secret_2026_itsjr
+      PORT: 4000
+      HOST: 0.0.0.0
+      FLASK_DEBUG: "false"
+      CORS_ORIGIN: http://35.192.67.237,http://35.192.67.237:80,http://35.192.67.237:4000
+    ports:
+      - "4000:4000"
+
+  mi-sitio-web:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: /api
+        VITE_BACKEND_URL: ""
+    container_name: aguilab-mi-sitio-web
+    restart: unless-stopped
+    depends_on:
+      - mi-api-flask
+    ports:
+      - "80:80"
+
+volumes:
+  db-data:
