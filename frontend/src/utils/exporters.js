@@ -431,6 +431,31 @@ export async function exportActivityLogPdf({ log, usuario }) {
   addFooter(doc)
   downloadPdf(doc, `bitacora-aguilab-${meta.file}.pdf`)
 }
+
+export async function exportActivityLogExcel({ log, usuario }) {
+  const XLSX = await loadXlsx()
+  const meta = stamp()
+  const workbook = XLSX.utils.book_new()
+  workbook.Props = {
+    Title: 'Bitácora AguiLab',
+    Subject: 'Log de actividad',
+    Author: usuario?.nombre || 'AguiLab',
+    Company: 'ITSJR',
+    CreatedDate: new Date(),
+  }
+
+  appendSheet(XLSX, workbook, 'Bitácora', [
+    ['AguiLab - Bitácora de Actividad'],
+    ['Generado', meta.display],
+    ['Usuario', usuario?.nombre || 'Usuario del sistema'],
+    [],
+    ['ID', 'Acción', 'Descripción', 'Detalle', 'Usuario', 'Fecha'],
+    ...log.map(item => [
+      item.id,
+      item.accion,
+      item.descripcion,
+      text(item.detalle, ''),
+      text(item.usuario_nombre, ''),
       dateText(item.fecha),
     ]),
   ], [10, 14, 54, 44, 26, 22])
