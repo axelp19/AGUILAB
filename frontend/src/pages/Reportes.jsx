@@ -4,6 +4,7 @@ import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, Tool
 import AppLayout from '../components/layout/AppLayout'
 import { Btn, KpiCard, PageHeader, Card, CardHeader, CardBody, Badge } from '../components/ui/UI'
 import { api } from '../api'
+import { exportInventoryExcel, exportInventoryPdf } from '../utils/exporters'
 
 const COLORES_ESTADO = {
   disponible: '#0a7c4e',
@@ -17,6 +18,7 @@ export default function Reportes({ activePage, onNavigate, onLogout, title, subt
   const [equipos, setEquipos] = useState([])
   const [tickets, setTickets] = useState([])
   const [loading, setLoading] = useState(true)
+  const [exporting, setExporting] = useState('')
 
   useEffect(() => {
     Promise.all([api.dashboard(), api.getEquipos({ incluir_bajas: 1 }), api.getTickets()])
@@ -58,6 +60,28 @@ export default function Reportes({ activePage, onNavigate, onLogout, title, subt
   const kpis = dash?.kpis || { total: 0, disponibles: 0, mantenimiento: 0, bajas: 0 }
   const pct = (v, t) => (t > 0 ? Math.round((v / t) * 100) : 0)
 
+  const handleExportPdf = async () => {
+    setExporting('pdf')
+    try {
+      await exportInventoryPdf({ dash, equipos, tickets, usuario })
+    } catch (e) {
+      alert('No se pudo exportar el PDF: ' + e.message)
+    } finally {
+      setExporting('')
+    }
+  }
+
+  const handleExportExcel = async () => {
+    setExporting('excel')
+    try {
+      await exportInventoryExcel({ dash, equipos, tickets, usuario })
+    } catch (e) {
+      alert('No se pudo exportar Excel: ' + e.message)
+    } finally {
+      setExporting('')
+    }
+  }
+
   return (
     <AppLayout activePage={activePage} onNavigate={onNavigate} onLogout={onLogout} title={title} subtitle={subtitle} usuario={usuario}>
       <PageHeader
@@ -65,8 +89,12 @@ export default function Reportes({ activePage, onNavigate, onLogout, title, subt
         breadcrumb="Inicio / Reportes y exportaciones"
         actions={
           <>
-            <Btn variant="outline"><FileText size={16} />Exportar PDF</Btn>
-            <Btn variant="success"><FileSpreadsheet size={16} />Exportar Excel</Btn>
+            <Btn variant="outline" onClick={handleExportPdf} disabled={Boolean(exporting)}>
+              <FileText size={16} />{exporting === 'pdf' ? 'Generando...' : 'Exportar PDF'}
+            </Btn>
+            <Btn variant="success" onClick={handleExportExcel} disabled={Boolean(exporting)}>
+              <FileSpreadsheet size={16} />{exporting === 'excel' ? 'Generando...' : 'Exportar Excel'}
+            </Btn>
           </>
         }
       />

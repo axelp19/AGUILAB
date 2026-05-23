@@ -17,6 +17,7 @@ import { useState, useEffect } from 'react'
 import AppLayout from '../components/layout/AppLayout'
 import { Modal, Badge, Btn, PageHeader, Card, CardBody, FormGroup, Input, Divider, SearchBar } from '../components/ui/UI'
 import { api } from '../api'
+import { exportActivityLogExcel, exportActivityLogPdf } from '../utils/exporters'
 
 const logColor = { CREAR: '#0a7c4e', EDITAR: '#003087', BAJA: '#CC0000', EXPORTAR: '#d97706' }
 const logBg = { CREAR: '#e6f4ef', EDITAR: 'var(--azul-light)', BAJA: 'var(--rojo-light)', EXPORTAR: 'var(--naranja-light)' }
@@ -34,6 +35,7 @@ export default function Admin({ activePage, onNavigate, onLogout, title, subtitl
   const [editUser, setEditUser] = useState(null)
   const [editCat, setEditCat] = useState(null)
   const [guardando, setGuardando] = useState(false)
+  const [exporting, setExporting] = useState('')
   const [formU, setFormU] = useState({ nombre: '', correo: '', password: '', rol: 'encargado', laboratorios: [] })
   const [formC, setFormC] = useState({ nombre: '', descripcion: '' })
 
@@ -137,6 +139,28 @@ export default function Admin({ activePage, onNavigate, onLogout, title, subtitl
       ...p,
       laboratorios: p.laboratorios.includes(sid) ? p.laboratorios.filter(l => l !== sid) : [...p.laboratorios, sid],
     }))
+  }
+
+  const exportarLogPdf = async () => {
+    setExporting('pdf')
+    try {
+      await exportActivityLogPdf({ log, usuario })
+    } catch (e) {
+      alert('No se pudo exportar el PDF: ' + e.message)
+    } finally {
+      setExporting('')
+    }
+  }
+
+  const exportarLogExcel = async () => {
+    setExporting('excel')
+    try {
+      await exportActivityLogExcel({ log, usuario })
+    } catch (e) {
+      alert('No se pudo exportar Excel: ' + e.message)
+    } finally {
+      setExporting('')
+    }
   }
 
   const tabs = [
@@ -271,8 +295,12 @@ export default function Admin({ activePage, onNavigate, onLogout, title, subtitl
       {tab === 'log' && (
         <>
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 14, gap: 8 }}>
-            <Btn variant="outline" size="sm"><FileText size={16} />PDF</Btn>
-            <Btn variant="success" size="sm"><FileSpreadsheet size={16} />Excel</Btn>
+            <Btn variant="outline" size="sm" onClick={exportarLogPdf} disabled={Boolean(exporting)}>
+              <FileText size={16} />{exporting === 'pdf' ? 'Generando...' : 'PDF'}
+            </Btn>
+            <Btn variant="success" size="sm" onClick={exportarLogExcel} disabled={Boolean(exporting)}>
+              <FileSpreadsheet size={16} />{exporting === 'excel' ? 'Generando...' : 'Excel'}
+            </Btn>
           </div>
           <Card>
             <CardBody noPad>
