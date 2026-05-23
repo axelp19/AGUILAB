@@ -16,6 +16,7 @@ import { useState, useEffect } from 'react'
 import AppLayout from '../components/layout/AppLayout'
 import { Modal, Badge, Btn, PageHeader, Card, CardBody, FormGroup, Input, Textarea, Divider, SearchBar } from '../components/ui/UI'
 import { api } from '../api'
+import { exportEquiposPdf, exportEquiposExcel } from '../utils/exporters'
 
 const estadoLabel = { disponible: 'Disponible', mantenimiento: 'Mantenimiento', en_uso: 'En uso', baja: 'Baja' }
 
@@ -34,6 +35,8 @@ export default function Equipos({ activePage, navigationState, onNavigate, onLog
   const [guardando, setGuardando] = useState(false)
   const [labSeleccionado, setLabSeleccionado] = useState('')
   const [form, setForm] = useState({ nombre: '', categoria: '', laboratorio_id: '', estado: 'disponible', marca: '', descripcion: '' })
+  const [exporting, setExporting] = useState('')
+  const [exportMessage, setExportMessage] = useState('')
 
   const puedeGestionar = usuario?.rol === 'administrador' || usuario?.rol === 'encargado'
 
@@ -147,6 +150,36 @@ export default function Equipos({ activePage, navigationState, onNavigate, onLog
 
   const f = (k, v) => setForm(p => ({ ...p, [k]: v }))
 
+  const labNombreActual = labSeleccionado
+    ? labs.find(l => String(l.id) === labSeleccionado)?.nombre || ''
+    : ''
+
+  const handleExportPdf = async () => {
+    setExporting('pdf')
+    setExportMessage('')
+    try {
+      await exportEquiposPdf({ equipos: equiposFiltrados, labNombre: labNombreActual, usuario })
+      setExportMessage('PDF generado correctamente. Revisa tus descargas.')
+    } catch (e) {
+      setExportMessage('No se pudo exportar el PDF: ' + e.message)
+    } finally {
+      setExporting('')
+    }
+  }
+
+  const handleExportExcel = async () => {
+    setExporting('excel')
+    setExportMessage('')
+    try {
+      await exportEquiposExcel({ equipos: equiposFiltrados, labNombre: labNombreActual, usuario })
+      setExportMessage('Excel generado correctamente. Revisa tus descargas.')
+    } catch (e) {
+      setExportMessage('No se pudo exportar Excel: ' + e.message)
+    } finally {
+      setExporting('')
+    }
+  }
+
   return (
     <AppLayout activePage={activePage} onNavigate={onNavigate} onLogout={onLogout} title={title} subtitle={subtitle} usuario={usuario}>
       <PageHeader
@@ -154,12 +187,22 @@ export default function Equipos({ activePage, navigationState, onNavigate, onLog
         breadcrumb={labSeleccionado && navigationState?.laboratorioNombre ? `Inicio / Inventario / ${navigationState.laboratorioNombre}` : 'Inicio / Inventario de equipos'}
         actions={
           <>
-            <Btn variant="outline" size="sm"><FileSpreadsheet size={16} />Excel</Btn>
-            <Btn variant="outline" size="sm"><FileText size={16} />PDF</Btn>
+            <Btn variant="outline" size="sm" onClick={handleExportExcel} disabled={Boolean(exporting)}>
+              <FileSpreadsheet size={16} />{exporting === 'excel' ? 'Generando...' : 'Excel'}
+            </Btn>
+            <Btn variant="outline" size="sm" onClick={handleExportPdf} disabled={Boolean(exporting)}>
+              <FileText size={16} />{exporting === 'pdf' ? 'Generando...' : 'PDF'}
+            </Btn>
             {puedeGestionar && <Btn onClick={abrirCrear}><PackagePlus size={16} />Agregar equipo</Btn>}
           </>
         }
       />
+
+      {exportMessage && (
+        <div style={{ background: exportMessage.startsWith('No') ? 'var(--rojo-light)' : 'var(--verde-light)', color: exportMessage.startsWith('No') ? 'var(--rojo)' : 'var(--verde)', padding: 12, borderRadius: 8, marginBottom: 16, fontSize: '.85rem', fontWeight: 700 }}>
+          {exportMessage}
+        </div>
+      )}
 
       <div style={{ display: 'flex', borderBottom: '2px solid var(--gris-200)', marginBottom: 20 }}>
         {[

@@ -1,5 +1,6 @@
 import itsjrLogo from '../assets/itsjr.png'
 import nxuniLogo from '../assets/nxuni.png'
+import appLogo from '../assets/logo.png'
 
 const COLORS = {
   blue: [0, 48, 135],
@@ -83,28 +84,31 @@ function addWatermark(doc, eagle) {
   }
 }
 
-function addSeal(doc, sealText) {
+async function loadSealLogo() {
+  return imageToDataUrl(appLogo)
+}
+
+function addSeal(doc, sealText, sealLogo) {
   const width = doc.internal.pageSize.getWidth()
   const height = doc.internal.pageSize.getHeight()
   const x = width - 33
   const y = height - 18
+  const r = 12
 
   doc.setDrawColor(...COLORS.blue)
   doc.setFillColor(255, 255, 255)
-  doc.circle(x, y, 12, 'FD')
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(7)
-  doc.setTextColor(...COLORS.blue)
-  doc.text('AGUILAB', x, y - 2, { align: 'center' })
-  doc.setFont('helvetica', 'normal')
-  doc.setFontSize(5.5)
-  doc.text('ITSJR', x, y + 3, { align: 'center' })
+  doc.circle(x, y, r, 'FD')
+
+  if (sealLogo) {
+    doc.addImage(sealLogo, 'PNG', x - r + 1.5, y - r + 1.5, (r - 1.5) * 2, (r - 1.5) * 2)
+  }
+
   doc.setTextColor(...COLORS.gray)
   doc.setFontSize(6)
   doc.text(sealText, width - 14, height - 6, { align: 'right' })
 }
 
-function addHeader(doc, { title, subtitle, generatedBy, generatedAt, logo, eagle, sealText }) {
+function addHeader(doc, { title, subtitle, generatedBy, generatedAt, logo, eagle, sealText, sealLogo }) {
   const width = doc.internal.pageSize.getWidth()
 
   addWatermark(doc, eagle)
@@ -125,7 +129,7 @@ function addHeader(doc, { title, subtitle, generatedBy, generatedAt, logo, eagle
   doc.text(`Generado: ${generatedAt}`, width - 12, 10, { align: 'right' })
   doc.text(`Usuario: ${generatedBy}`, width - 12, 16, { align: 'right' })
 
-  addSeal(doc, sealText)
+  addSeal(doc, sealText, sealLogo)
 }
 
 function addFooter(doc) {
@@ -200,6 +204,7 @@ export async function exportInventoryPdf({ dash, equipos, tickets, usuario }) {
   const meta = stamp()
   const logo = await imageToDataUrl(itsjrLogo)
   const eagle = await imageToDataUrl(nxuniLogo)
+  const sealLogo = await loadSealLogo()
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
   const generatedBy = usuario?.nombre || 'Usuario del sistema'
   const kpis = dash?.kpis || {}
@@ -212,6 +217,7 @@ export async function exportInventoryPdf({ dash, equipos, tickets, usuario }) {
     logo,
     eagle,
     sealText: meta.seal,
+    sealLogo,
   })
 
   autoTable(doc, {
@@ -251,6 +257,7 @@ export async function exportInventoryPdf({ dash, equipos, tickets, usuario }) {
     logo,
     eagle,
     sealText: meta.seal,
+    sealLogo,
   })
 
   autoTable(doc, {
@@ -284,6 +291,7 @@ export async function exportInventoryPdf({ dash, equipos, tickets, usuario }) {
     logo,
     eagle,
     sealText: meta.seal,
+    sealLogo,
   })
 
   autoTable(doc, {
@@ -388,6 +396,7 @@ export async function exportActivityLogPdf({ log, usuario }) {
   const meta = stamp()
   const logo = await imageToDataUrl(itsjrLogo)
   const eagle = await imageToDataUrl(nxuniLogo)
+  const sealLogo = await loadSealLogo()
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
 
   addHeader(doc, {
@@ -398,6 +407,7 @@ export async function exportActivityLogPdf({ log, usuario }) {
     logo,
     eagle,
     sealText: meta.seal,
+    sealLogo,
   })
 
   autoTable(doc, {
@@ -457,4 +467,132 @@ export async function exportActivityLogExcel({ log, usuario }) {
 
 export function reportFileBaseName(prefix) {
   return `${safeName(prefix)}-${stamp().file}`
+}
+
+export async function exportEquiposPdf({ equipos, labNombre, usuario }) {
+  const { jsPDF, autoTable } = await loadPdfLibs()
+  const meta = stamp()
+  const logo = await imageToDataUrl(itsjrLogo)
+  const eagle = await imageToDataUrl(nxuniLogo)
+  const sealLogo = await loadSealLogo()
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
+  const generatedBy = usuario?.nombre || 'Usuario del sistema'
+  const subtitleText = labNombre
+    ? `Equipos del laboratorio: ${labNombre}`
+    : 'Listado completo de equipos registrados'
+
+  addHeader(doc, {
+    title: 'Inventario de Equipos',
+    subtitle: `${subtitleText} - AguiLab`,
+    generatedBy,
+    generatedAt: meta.display,
+    logo,
+    eagle,
+    sealText: meta.seal,
+    sealLogo,
+  })
+
+  const resumen = {
+    total: equipos.length,
+    disponibles: equipos.filter(e => e.estado === 'disponible').length,
+    mantenimiento: equipos.filter(e => e.estado === 'mantenimiento').length,
+    en_uso: equipos.filter(e => e.estado === 'en_uso').length,
+    bajas: equipos.filter(e => e.estado === 'baja').length,
+  }
+
+  autoTable(doc, {
+    ...tableTheme(),
+    startY: 36,
+    margin: { left: 12, right: 12 },
+    head: [['Indicador', 'Valor', 'Porcentaje']],
+    body: [
+      ['Total de equipos', resumen.total, '100%'],
+      ['Disponibles', resumen.disponibles, pct(resumen.disponibles, resumen.total)],
+      ['En uso', resumen.en_uso, pct(resumen.en_uso, resumen.total)],
+      ['En mantenimiento', resumen.mantenimiento, pct(resumen.mantenimiento, resumen.total)],
+      ['Dados de baja', resumen.bajas, pct(resumen.bajas, resumen.total)],
+    ],
+    columnStyles: { 0: { fontStyle: 'bold' }, 1: { halign: 'right' }, 2: { halign: 'right' } },
+  })
+
+  autoTable(doc, {
+    ...tableTheme(),
+    startY: doc.lastAutoTable.finalY + 8,
+    margin: { left: 12, right: 12 },
+    head: [['ID', 'Equipo', 'Categoría', 'Laboratorio', 'Estado', 'Marca', 'Fecha registro', 'Descripción']],
+    body: equipos.map(e => [
+      e.id,
+      e.nombre,
+      e.categoria,
+      e.laboratorio_nombre,
+      estadoLabels[e.estado] || e.estado,
+      text(e.marca, 'S/M'),
+      dateText(e.fecha_registro),
+      text(e.descripcion, ''),
+    ]),
+    columnStyles: {
+      0: { halign: 'right', cellWidth: 12 },
+      1: { cellWidth: 34 },
+      3: { cellWidth: 30 },
+      7: { cellWidth: 60 },
+    },
+  })
+
+  addFooter(doc)
+  const suffix = labNombre ? safeName(labNombre) : 'todos'
+  downloadPdf(doc, `inventario-${suffix}-${meta.file}.pdf`)
+}
+
+export async function exportEquiposExcel({ equipos, labNombre, usuario }) {
+  const XLSX = await loadXlsx()
+  const meta = stamp()
+  const workbook = XLSX.utils.book_new()
+  const subtitleText = labNombre || 'Todos los laboratorios'
+
+  workbook.Props = {
+    Title: `Inventario - ${subtitleText}`,
+    Subject: 'Inventario de equipos',
+    Author: usuario?.nombre || 'AguiLab',
+    Company: 'ITSJR',
+    CreatedDate: new Date(),
+  }
+
+  const resumen = {
+    total: equipos.length,
+    disponibles: equipos.filter(e => e.estado === 'disponible').length,
+    mantenimiento: equipos.filter(e => e.estado === 'mantenimiento').length,
+    en_uso: equipos.filter(e => e.estado === 'en_uso').length,
+    bajas: equipos.filter(e => e.estado === 'baja').length,
+  }
+
+  appendSheet(XLSX, workbook, 'Resumen', [
+    [`AguiLab - Inventario de Equipos`],
+    ['Laboratorio', subtitleText],
+    ['Generado', meta.display],
+    ['Usuario', usuario?.nombre || 'Usuario del sistema'],
+    [],
+    ['Indicador', 'Valor', 'Porcentaje'],
+    ['Total de equipos', resumen.total, '100%'],
+    ['Disponibles', resumen.disponibles, pct(resumen.disponibles, resumen.total)],
+    ['En uso', resumen.en_uso, pct(resumen.en_uso, resumen.total)],
+    ['En mantenimiento', resumen.mantenimiento, pct(resumen.mantenimiento, resumen.total)],
+    ['Dados de baja', resumen.bajas, pct(resumen.bajas, resumen.total)],
+  ], [34, 20, 20])
+
+  appendSheet(XLSX, workbook, 'Equipos', [
+    ['ID', 'Equipo', 'Categoría', 'Laboratorio', 'Estado', 'Marca', 'Descripción', 'Fecha registro'],
+    ...equipos.map(e => [
+      e.id,
+      e.nombre,
+      e.categoria,
+      e.laboratorio_nombre,
+      estadoLabels[e.estado] || e.estado,
+      text(e.marca, 'S/M'),
+      text(e.descripcion, ''),
+      dateText(e.fecha_registro),
+    ]),
+  ], [10, 28, 20, 24, 16, 16, 44, 22])
+
+  const suffix = labNombre ? safeName(labNombre) : 'todos'
+  saveWorkbook(XLSX, workbook, `inventario-${suffix}-${meta.file}.xlsx`)
 }
