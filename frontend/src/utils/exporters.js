@@ -91,21 +91,16 @@ async function loadSealLogo() {
 function addSeal(doc, sealText, sealLogo) {
   const width = doc.internal.pageSize.getWidth()
   const height = doc.internal.pageSize.getHeight()
-  const x = width - 33
-  const y = height - 18
-  const r = 12
-
-  doc.setDrawColor(...COLORS.blue)
-  doc.setFillColor(255, 255, 255)
-  doc.circle(x, y, r, 'FD')
+  const x = width - 26
+  const y = height - 25
 
   if (sealLogo) {
-    doc.addImage(sealLogo, 'PNG', x - r + 1.5, y - r + 1.5, (r - 1.5) * 2, (r - 1.5) * 2)
+    doc.addImage(sealLogo, 'PNG', x, y, 14, 14)
   }
 
   doc.setTextColor(...COLORS.gray)
   doc.setFontSize(6)
-  doc.text(sealText, width - 14, height - 6, { align: 'right' })
+  doc.text(sealText, width - 12, height - 7, { align: 'right' })
 }
 
 function addHeader(doc, { title, subtitle, generatedBy, generatedAt, logo, eagle, sealText, sealLogo }) {
@@ -113,19 +108,21 @@ function addHeader(doc, { title, subtitle, generatedBy, generatedAt, logo, eagle
 
   addWatermark(doc, eagle)
 
+  // Header band
   doc.setFillColor(...COLORS.blue)
   doc.rect(0, 0, width, 24, 'F')
   doc.setFillColor(...COLORS.red)
-  doc.rect(0, 24, width, 2.4, 'F')
-  doc.addImage(logo, 'PNG', 12, 5, 18, 18)
+  doc.rect(0, 24, width, 2, 'F')
+  doc.addImage(logo, 'PNG', 12, 4.5, 15, 15)
 
   doc.setTextColor(255, 255, 255)
   doc.setFont('helvetica', 'bold')
-  doc.setFontSize(14)
-  doc.text(title, 34, 11)
+  doc.setFontSize(13)
+  doc.text(title, 32, 11)
   doc.setFont('helvetica', 'normal')
-  doc.setFontSize(8.5)
-  doc.text(subtitle, 34, 17)
+  doc.setFontSize(8)
+  doc.text(subtitle, 32, 17)
+  doc.setFontSize(7.5)
   doc.text(`Generado: ${generatedAt}`, width - 12, 10, { align: 'right' })
   doc.text(`Usuario: ${generatedBy}`, width - 12, 16, { align: 'right' })
 
@@ -139,30 +136,31 @@ function addFooter(doc) {
 
   for (let i = 1; i <= pageCount; i += 1) {
     doc.setPage(i)
-    doc.setDrawColor(220, 226, 235)
-    doc.line(12, height - 12, width - 46, height - 12)
+    doc.setDrawColor(230, 235, 242)
+    doc.line(12, height - 12, width - 30, height - 12)
     doc.setTextColor(...COLORS.gray)
     doc.setFontSize(7)
-    doc.text('AguiLab - Sistema de Gestion de Inventarios ITSJR', 12, height - 7)
-    doc.text(`Pagina ${i} de ${pageCount}`, width / 2, height - 7, { align: 'center' })
+    doc.text('AguiLab - Sistema de Gestión de Inventarios ITSJR', 12, height - 7)
+    doc.text(`Página ${i} de ${pageCount}`, width - 30, height - 7, { align: 'right' })
   }
 }
 
 function tableTheme() {
   return {
-    theme: 'grid',
+    theme: 'striped',
     styles: {
       font: 'helvetica',
-      fontSize: 7.5,
-      cellPadding: 2,
-      lineColor: [220, 226, 235],
+      fontSize: 8,
+      cellPadding: 3.5,
+      lineColor: [235, 240, 247],
       lineWidth: 0.1,
-      textColor: [30, 41, 59],
+      textColor: [45, 55, 72],
     },
     headStyles: {
       fillColor: COLORS.blue,
       textColor: [255, 255, 255],
       fontStyle: 'bold',
+      fontSize: 8.5,
     },
     alternateRowStyles: {
       fillColor: [248, 250, 252],
