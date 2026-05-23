@@ -209,7 +209,7 @@ export async function exportInventoryPdf({ dash, equipos, tickets, usuario }) {
 
   addHeader(doc, {
     title: 'Reporte General de Inventario',
-    subtitle: 'Instituto Tecnologico de San Juan del Rio - AguiLab',
+    subtitle: 'Instituto Tecnológico de San Juan del Río - AguiLab',
     generatedBy,
     generatedAt: meta.display,
     logo,
@@ -222,7 +222,7 @@ export async function exportInventoryPdf({ dash, equipos, tickets, usuario }) {
     ...tableTheme(),
     startY: 36,
     margin: { left: 12, right: 12 },
-    head: [['Indicador', 'Valor', 'Observacion']],
+    head: [['Indicador', 'Valor', 'Observación']],
     body: [
       ['Total de equipos', text(kpis.total, '0'), 'Inventario total registrado'],
       ['Disponibles', text(kpis.disponibles, '0'), pct(kpis.disponibles, kpis.total)],
@@ -262,7 +262,7 @@ export async function exportInventoryPdf({ dash, equipos, tickets, usuario }) {
     ...tableTheme(),
     startY: 36,
     margin: { left: 12, right: 12 },
-    head: [['ID', 'Equipo', 'Categoria', 'Laboratorio', 'Estado', 'Marca', 'Descripcion']],
+    head: [['ID', 'Equipo', 'Categoría', 'Laboratorio', 'Estado', 'Marca', 'Descripción']],
     body: equipos.map(e => [
       e.id,
       e.nombre,
@@ -296,7 +296,7 @@ export async function exportInventoryPdf({ dash, equipos, tickets, usuario }) {
     ...tableTheme(),
     startY: 36,
     margin: { left: 12, right: 12 },
-    head: [['ID', 'Equipo', 'Tipo', 'Prioridad', 'Estado', 'Reporto', 'Fecha', 'Descripcion']],
+    head: [['ID', 'Equipo', 'Tipo', 'Prioridad', 'Estado', 'Reportó', 'Fecha', 'Descripción']],
     body: tickets.map(t => [
       t.id,
       text(t.equipo_nombre, `Equipo ${t.equipo_id}`),
@@ -335,7 +335,7 @@ export async function exportInventoryExcel({ dash, equipos, tickets, usuario }) 
     ['Generado', meta.display],
     ['Usuario', usuario?.nombre || 'Usuario del sistema'],
     [],
-    ['Indicador', 'Valor', 'Observacion'],
+    ['Indicador', 'Valor', 'Observación'],
     ['Total de equipos', kpis.total || 0, 'Inventario total registrado'],
     ['Disponibles', kpis.disponibles || 0, pct(kpis.disponibles, kpis.total)],
     ['En mantenimiento', kpis.mantenimiento || 0, pct(kpis.mantenimiento, kpis.total)],
@@ -354,7 +354,7 @@ export async function exportInventoryExcel({ dash, equipos, tickets, usuario }) 
   ], [28, 12, 14, 16, 10, 10])
 
   appendSheet(XLSX, workbook, 'Equipos', [
-    ['ID', 'Equipo', 'Categoria', 'Laboratorio', 'Estado', 'Marca', 'Descripcion', 'Fecha registro'],
+    ['ID', 'Equipo', 'Categoría', 'Laboratorio', 'Estado', 'Marca', 'Descripción', 'Fecha registro'],
     ...equipos.map(e => [
       e.id,
       e.nombre,
@@ -368,7 +368,7 @@ export async function exportInventoryExcel({ dash, equipos, tickets, usuario }) 
   ], [10, 28, 20, 24, 16, 16, 44, 22])
 
   appendSheet(XLSX, workbook, 'Tickets', [
-    ['ID', 'Equipo', 'Tipo', 'Prioridad', 'Estado', 'Reporto', 'Fecha', 'Descripcion'],
+    ['ID', 'Equipo', 'Tipo', 'Prioridad', 'Estado', 'Reportó', 'Fecha', 'Descripción'],
     ...tickets.map(t => [
       t.id,
       text(t.equipo_nombre, `Equipo ${t.equipo_id}`),
@@ -398,8 +398,8 @@ export async function exportActivityLogPdf({ log, usuario }) {
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
 
   addHeader(doc, {
-    title: 'Bitacora de Actividad',
-    subtitle: 'Auditoria administrativa del sistema AguiLab',
+    title: 'Bitácora de Actividad',
+    subtitle: 'Auditoría administrativa del sistema AguiLab',
     generatedBy: usuario?.nombre || 'Usuario del sistema',
     generatedAt: meta.display,
     logo,
@@ -412,7 +412,7 @@ export async function exportActivityLogPdf({ log, usuario }) {
     ...tableTheme(),
     startY: 36,
     margin: { left: 12, right: 12 },
-    head: [['ID', 'Accion', 'Descripcion', 'Detalle', 'Usuario', 'Fecha']],
+    head: [['ID', 'Acción', 'Descripción', 'Detalle', 'Usuario', 'Fecha']],
     body: log.map(item => [
       item.id,
       item.accion,
@@ -431,31 +431,6 @@ export async function exportActivityLogPdf({ log, usuario }) {
   addFooter(doc)
   downloadPdf(doc, `bitacora-aguilab-${meta.file}.pdf`)
 }
-
-export async function exportActivityLogExcel({ log, usuario }) {
-  const XLSX = await loadXlsx()
-  const meta = stamp()
-  const workbook = XLSX.utils.book_new()
-  workbook.Props = {
-    Title: 'Bitacora AguiLab',
-    Subject: 'Log de actividad',
-    Author: usuario?.nombre || 'AguiLab',
-    Company: 'ITSJR',
-    CreatedDate: new Date(),
-  }
-
-  appendSheet(XLSX, workbook, 'Bitacora', [
-    ['AguiLab - Bitacora de Actividad'],
-    ['Generado', meta.display],
-    ['Usuario', usuario?.nombre || 'Usuario del sistema'],
-    [],
-    ['ID', 'Accion', 'Descripcion', 'Detalle', 'Usuario', 'Fecha'],
-    ...log.map(item => [
-      item.id,
-      item.accion,
-      item.descripcion,
-      text(item.detalle, ''),
-      text(item.usuario_nombre, ''),
       dateText(item.fecha),
     ]),
   ], [10, 14, 54, 44, 26, 22])
