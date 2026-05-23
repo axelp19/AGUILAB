@@ -36,6 +36,7 @@ export default function Admin({ activePage, onNavigate, onLogout, title, subtitl
   const [editCat, setEditCat] = useState(null)
   const [guardando, setGuardando] = useState(false)
   const [exporting, setExporting] = useState('')
+  const [exportMessage, setExportMessage] = useState('')
   const [formU, setFormU] = useState({ nombre: '', correo: '', password: '', rol: 'encargado', laboratorios: [] })
   const [formC, setFormC] = useState({ nombre: '', descripcion: '' })
 
@@ -143,10 +144,12 @@ export default function Admin({ activePage, onNavigate, onLogout, title, subtitl
 
   const exportarLogPdf = async () => {
     setExporting('pdf')
+    setExportMessage('')
     try {
       await exportActivityLogPdf({ log, usuario })
+      setExportMessage('PDF generado correctamente. Revisa tus descargas.')
     } catch (e) {
-      alert('No se pudo exportar el PDF: ' + e.message)
+      setExportMessage('No se pudo exportar el PDF: ' + e.message)
     } finally {
       setExporting('')
     }
@@ -154,10 +157,12 @@ export default function Admin({ activePage, onNavigate, onLogout, title, subtitl
 
   const exportarLogExcel = async () => {
     setExporting('excel')
+    setExportMessage('')
     try {
       await exportActivityLogExcel({ log, usuario })
+      setExportMessage('Excel generado correctamente. Revisa tus descargas.')
     } catch (e) {
-      alert('No se pudo exportar Excel: ' + e.message)
+      setExportMessage('No se pudo exportar Excel: ' + e.message)
     } finally {
       setExporting('')
     }
@@ -214,6 +219,12 @@ export default function Admin({ activePage, onNavigate, onLogout, title, subtitl
       {error && (
         <div style={{ background: 'var(--rojo-light)', color: 'var(--rojo)', padding: 14, borderRadius: 8, marginBottom: 16 }}>
           {error}
+        </div>
+      )}
+
+      {exportMessage && (
+        <div style={{ background: exportMessage.startsWith('No') ? 'var(--rojo-light)' : 'var(--verde-light)', color: exportMessage.startsWith('No') ? 'var(--rojo)' : 'var(--verde)', padding: 12, borderRadius: 8, marginBottom: 16, fontSize: '.85rem', fontWeight: 700 }}>
+          {exportMessage}
         </div>
       )}
 

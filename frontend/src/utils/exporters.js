@@ -177,6 +177,10 @@ function downloadBlob(blob, filename) {
   URL.revokeObjectURL(url)
 }
 
+function downloadPdf(doc, filename) {
+  downloadBlob(doc.output('blob'), filename)
+}
+
 function appendSheet(XLSX, workbook, name, rows, widths = []) {
   const sheet = XLSX.utils.aoa_to_sheet(rows)
   if (widths.length) sheet['!cols'] = widths.map(wch => ({ wch }))
@@ -304,7 +308,7 @@ export async function exportInventoryPdf({ dash, equipos, tickets, usuario }) {
   })
 
   addFooter(doc)
-  doc.save(`reporte-aguilab-${meta.file}.pdf`)
+  downloadPdf(doc, `reporte-aguilab-${meta.file}.pdf`)
 }
 
 export async function exportInventoryExcel({ dash, equipos, tickets, usuario }) {
@@ -417,7 +421,7 @@ export async function exportActivityLogPdf({ log, usuario }) {
   })
 
   addFooter(doc)
-  doc.save(`bitacora-aguilab-${meta.file}.pdf`)
+  downloadPdf(doc, `bitacora-aguilab-${meta.file}.pdf`)
 }
 
 export async function exportActivityLogExcel({ log, usuario }) {

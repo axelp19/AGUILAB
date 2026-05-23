@@ -19,6 +19,7 @@ export default function Reportes({ activePage, onNavigate, onLogout, title, subt
   const [tickets, setTickets] = useState([])
   const [loading, setLoading] = useState(true)
   const [exporting, setExporting] = useState('')
+  const [exportMessage, setExportMessage] = useState('')
 
   useEffect(() => {
     Promise.all([api.dashboard(), api.getEquipos({ incluir_bajas: 1 }), api.getTickets()])
@@ -62,10 +63,12 @@ export default function Reportes({ activePage, onNavigate, onLogout, title, subt
 
   const handleExportPdf = async () => {
     setExporting('pdf')
+    setExportMessage('')
     try {
       await exportInventoryPdf({ dash, equipos, tickets, usuario })
+      setExportMessage('PDF generado correctamente. Revisa tus descargas.')
     } catch (e) {
-      alert('No se pudo exportar el PDF: ' + e.message)
+      setExportMessage('No se pudo exportar el PDF: ' + e.message)
     } finally {
       setExporting('')
     }
@@ -73,10 +76,12 @@ export default function Reportes({ activePage, onNavigate, onLogout, title, subt
 
   const handleExportExcel = async () => {
     setExporting('excel')
+    setExportMessage('')
     try {
       await exportInventoryExcel({ dash, equipos, tickets, usuario })
+      setExportMessage('Excel generado correctamente. Revisa tus descargas.')
     } catch (e) {
-      alert('No se pudo exportar Excel: ' + e.message)
+      setExportMessage('No se pudo exportar Excel: ' + e.message)
     } finally {
       setExporting('')
     }
@@ -98,6 +103,12 @@ export default function Reportes({ activePage, onNavigate, onLogout, title, subt
           </>
         }
       />
+
+      {exportMessage && (
+        <div style={{ background: exportMessage.startsWith('No') ? 'var(--rojo-light)' : 'var(--verde-light)', color: exportMessage.startsWith('No') ? 'var(--rojo)' : 'var(--verde)', padding: 12, borderRadius: 8, marginBottom: 16, fontSize: '.85rem', fontWeight: 700 }}>
+          {exportMessage}
+        </div>
+      )}
 
       <div className="responsive-grid-5" style={{ marginBottom: 24 }}>
         <KpiCard label="Total Equipos" value={kpis.total} accent="blue" />
